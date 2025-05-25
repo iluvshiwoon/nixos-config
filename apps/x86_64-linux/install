@@ -56,7 +56,7 @@ install_nixos() {
       ;;
   esac
 
-  sudo nixos-install --no-root-passwd --flake .#$FLAKE_TARGET $@
+  sudo nixos-install --flake .#$FLAKE_TARGET $@
   sudo chmod -R 775 /mnt/etc/nixos
 }
 
