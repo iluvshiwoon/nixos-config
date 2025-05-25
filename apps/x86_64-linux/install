@@ -15,8 +15,7 @@ cleanup() {
 }
 
 download_config() {
-  curl -LJ0 https://github.com/dustinlyons/nixos-config/archive/main.zip -o nixos-config-main.zip
-  unzip nixos-config-main.zip
+    git clone https://github.com/iluvshiwoon/nixos-config.git
   mv nixos-config-main/templates/starter nixos-config
   cd nixos-config
 }
@@ -71,7 +70,7 @@ prompt_reboot() {
 
 cleanup
 check_installer
-# download_config
+download_config
 run_apply
 run_disko
 setup_files
