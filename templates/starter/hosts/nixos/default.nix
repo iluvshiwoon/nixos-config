@@ -7,7 +7,8 @@ let user = "%USER%";
     ../../modules/nixos/disk-config.nix
     ../../modules/shared
   ];
-boot = {
+
+  boot = {
     loader = {
       systemd-boot = {
         enable = true;
@@ -41,6 +42,13 @@ boot = {
       "vm.dirty_background_ratio" = 5;
     };
   };
+  
+  # Essential services
+  services = {
+    fstrim.enable = true;  # SSD maintenance
+    earlyoom.enable = true;  # Prevent memory exhaustion
+  };
+
   # Use the systemd-boot EFI boot loader.
   # boot = {
   #   loader = {

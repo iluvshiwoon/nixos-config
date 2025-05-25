@@ -35,6 +35,10 @@ _: {
   # Streamlined Disko configuration for aarch64 NixOS VM with Apple Virtualization
   # 128GB nvme0n1 disk, 12GB RAM, 6 CPU cores
   
+
+  # Streamlined Disko configuration for aarch64 NixOS VM with Apple Virtualization
+  # 128GB nvme0n1 disk, 12GB RAM, 6 CPU cores
+  
   disko.devices = {
     disk = {
       nvme0n1 = {
@@ -81,52 +85,24 @@ _: {
       };
     };
     
-    # VirtioFS shared folder
-    nodev = {
-      "/media/shared" = {
-        fsType = "virtiofs";
-        device = "share";
-        options = [ "rw" "nofail" ];
-      };
+
+  };
+  
+  # Filesystem configurations
+  fileSystems = {
+    # Large tmpfs for better performance with 12GB RAM
+    "/tmp" = {
+      fsType = "tmpfs";
+      options = [ "size=2G" "nodev" "nosuid" ];
+    };
+    
+    # VirtioFS shared folder (Apple Virtualization)
+    "/media/shared" = {
+      fsType = "virtiofs";
+      device = "share";
+      options = [ "rw" "nofail" ];
     };
   };
   
-  # Large tmpfs for better performance with 12GB RAM
-  fileSystems."/tmp" = {
-    fsType = "tmpfs";
-    options = [ "size=2G" "nodev" "nosuid" ];
-  };
-  
-  # UEFI boot configuration
-  # boot = {
-  #   loader = {
-  #     systemd-boot.enable = true;
-  #     efi.canTouchEfiVariables = true;
-  #   };
-  #   
-  #   # Essential kernel modules for Apple Virtualization
-  #   initrd.availableKernelModules = [
-  #     "nvme" "virtio_pci" "virtio_blk" "virtio_fs"
-  #   ];
-  #   
-  #   # Key performance optimizations
-  #   kernelParams = [
-  #     "elevator=noop"
-  #     "mitigations=off"
-  #   ];
-  #   
-  #   # Memory and I/O optimizations
-  #   kernel.sysctl = {
-  #     "vm.swappiness" = 10;
-  #     "vm.dirty_ratio" = 15;
-  #     "vm.dirty_background_ratio" = 5;
-  #   };
-  # };
-  
-  # Essential services
-  services = {
-    fstrim.enable = true;  # SSD maintenance
-    earlyoom.enable = true;  # Prevent memory exhaustion
-  };
-
 }
+
