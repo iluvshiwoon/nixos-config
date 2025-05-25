@@ -1,34 +1,132 @@
 _: {
   # This formats the disk with the ext4 filesystem
   # Other examples found here: https://github.com/nix-community/disko/tree/master/example
+  # disko.devices = {
+  #   disk = {
+  #     vdb = {
+  #       device = "/dev/%DISK%";
+  #       type = "disk";
+  #       content = {
+  #         type = "gpt";
+  #         partitions = {
+  #           ESP = {
+  #             type = "EF00";
+  #             size = "100M";
+  #             content = {
+  #               type = "filesystem";
+  #               format = "vfat";
+  #               mountpoint = "/boot";
+  #             };
+  #           };
+  #           root = {
+  #             size = "100%";
+  #             content = {
+  #               type = "filesystem";
+  #               format = "ext4";
+  #               mountpoint = "/";
+  #             };
+  #           };
+  #         };
+  #       };
+  #     };
+  #   };
+  # };
+  
+  # Streamlined Disko configuration for aarch64 NixOS VM with Apple Virtualization
+  # 128GB nvme0n1 disk, 12GB RAM, 6 CPU cores
+  
   disko.devices = {
     disk = {
-      vdb = {
-        device = "/dev/%DISK%";
+      nvme0n1 = {
         type = "disk";
+        device = "/dev/nvme0n1";
         content = {
           type = "gpt";
           partitions = {
+            # EFI System Partition for UEFI boot
             ESP = {
+              size = "1G";
               type = "EF00";
-              size = "100M";
               content = {
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
               };
             };
+            
+            # Swap partition - 4GB for 12GB RAM
+            swap = {
+              size = "4G";
+              content = {
+                type = "swap";
+                randomEncryption = true;
+              };
+            };
+            
+            # Root partition - remaining space
             root = {
               size = "100%";
               content = {
                 type = "filesystem";
                 format = "ext4";
                 mountpoint = "/";
+                mountOptions = [
+                  "noatime"
+                  "discard"
+                ];
               };
             };
           };
         };
       };
     };
+    
+    # VirtioFS shared folder
+    nodev = {
+      "/media/shared" = {
+        fsType = "virtiofs";
+        device = "share";
+        options = [ "rw" "nofail" ];
+      };
+    };
   };
+  
+  # Large tmpfs for better performance with 12GB RAM
+  fileSystems."/tmp" = {
+    fsType = "tmpfs";
+    options = [ "size=2G" "nodev" "nosuid" ];
+  };
+  
+  # UEFI boot configuration
+  # boot = {
+  #   loader = {
+  #     systemd-boot.enable = true;
+  #     efi.canTouchEfiVariables = true;
+  #   };
+  #   
+  #   # Essential kernel modules for Apple Virtualization
+  #   initrd.availableKernelModules = [
+  #     "nvme" "virtio_pci" "virtio_blk" "virtio_fs"
+  #   ];
+  #   
+  #   # Key performance optimizations
+  #   kernelParams = [
+  #     "elevator=noop"
+  #     "mitigations=off"
+  #   ];
+  #   
+  #   # Memory and I/O optimizations
+  #   kernel.sysctl = {
+  #     "vm.swappiness" = 10;
+  #     "vm.dirty_ratio" = 15;
+  #     "vm.dirty_background_ratio" = 5;
+  #   };
+  # };
+  
+  # Essential services
+  services = {
+    fstrim.enable = true;  # SSD maintenance
+    earlyoom.enable = true;  # Prevent memory exhaustion
+  };
+
 }

@@ -7,23 +7,56 @@ let user = "%USER%";
     ../../modules/nixos/disk-config.nix
     ../../modules/shared
   ];
-
-  # Use the systemd-boot EFI boot loader.
-  boot = {
+boot = {
     loader = {
       systemd-boot = {
         enable = true;
-        configurationLimit = 42;
+        configurationLimit = 42;  # From template
       };
       efi.canTouchEfiVariables = true;
     };
-    initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
-    # Uncomment for AMD GPU
-    # initrd.kernelModules = [ "amdgpu" ];
+    
+    # Merged kernel modules (template + Apple Virtualization)
+    initrd.availableKernelModules = [
+      # From template (USB, SATA support)
+      "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod"
+      # Apple Virtualization essentials
+      "virtio_pci" "virtio_blk" "virtio_fs"
+    ];
+    
+    # From template
     kernelPackages = pkgs.linuxPackages_latest;
     kernelModules = [ "uinput" ];
+    
+    # Performance optimizations for Apple Virtualization
+    kernelParams = [
+      "elevator=noop"
+      "mitigations=off"
+    ];
+    
+    # Memory and I/O optimizations
+    kernel.sysctl = {
+      "vm.swappiness" = 10;
+      "vm.dirty_ratio" = 15;
+      "vm.dirty_background_ratio" = 5;
+    };
   };
-
+  # Use the systemd-boot EFI boot loader.
+  # boot = {
+  #   loader = {
+  #     systemd-boot = {
+  #       enable = true;
+  #       configurationLimit = 42;
+  #     };
+  #     efi.canTouchEfiVariables = true;
+  #   };
+  #   initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usbhid" "usb_storage" "sd_mod" ];
+  #   # Uncomment for AMD GPU
+  #   # initrd.kernelModules = [ "amdgpu" ];
+  #   kernelPackages = pkgs.linuxPackages_latest;
+  #   kernelModules = [ "uinput" ];
+  # };
+  #
   # Set your time zone.
   time.timeZone = "America/New_York";
 
