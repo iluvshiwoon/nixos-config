@@ -2,7 +2,7 @@
 
 let user = "%USER%";
     keys = [ "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOk8iAnIaa1deoc7jw8YACPNVka1ZFJxhnU4G74TmS+p" ]; in
-{
+  {
   imports = [
     ../../modules/nixos/disk-config.nix
     ../../modules/shared
@@ -269,7 +269,7 @@ let user = "%USER%";
   #     enable = true;
   #     package = pkgs.emacs-unstable;
   #   };
-  # };
+  };
 
   # When emacs builds from no cache, it exceeds the 90s timeout default
   # systemd.user.services.emacs = {
